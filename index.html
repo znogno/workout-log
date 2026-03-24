@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>83돼지 운동일지</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#242424; --border:#2e2e2e;
+    --accent:#ff5c00; --accent2:#ff8c42; --text:#f0f0f0;
+    --text-muted:#888; --text-dim:#444;
+    --good:#4caf50; --bad:#f44336; --mid:#ff9800;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;padding:16px;}
+  .app{max-width:480px;margin:0 auto;}
+
+  .header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+  .header h1{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:2px;color:var(--accent);line-height:1;}
+  .header p{font-size:10px;color:var(--text-muted);margin-top:3px;letter-spacing:1px;text-transform:uppercase;}
+  .header-right{font-size:11px;color:var(--text-muted);text-align:right;}
+  .header-right span{display:block;font-size:17px;font-weight:700;color:var(--text);}
+
+  .tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--surface);padding:4px;border-radius:10px;}
+  .tab{flex:1;padding:8px 2px;border:none;border-radius:7px;background:transparent;color:var(--text-muted);font-size:11px;font-family:'Noto Sans KR',sans-serif;font-weight:500;cursor:pointer;transition:all 0.2s;}
+  .tab.active{background:var(--accent);color:white;}
+  .section{display:none;} .section.active{display:block;}
+
+  .card{background:var(--surface);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--border);}
+  .card-title{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:11px;}
+
+  .input-group{margin-bottom:10px;}
+  .input-group label{display:block;font-size:11px;color:var(--text-muted);margin-bottom:5px;}
+  input[type="date"],input[type="text"],input[type="number"],textarea,select{
+    width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+    padding:9px 11px;color:var(--text);font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color 0.2s;
+  }
+  input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+  textarea{resize:none;height:58px;line-height:1.5;}
+  input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5);}
+
+  .condition-btns{display:flex;gap:6px;}
+  .cond-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font-size:20px;cursor:pointer;transition:all 0.15s;text-align:center;}
+  .cond-btn.selected-good{border-color:var(--good);background:rgba(76,175,80,0.15);}
+  .cond-btn.selected-mid{border-color:var(--mid);background:rgba(255,152,0,0.15);}
+  .cond-btn.selected-bad{border-color:var(--bad);background:rgba(244,67,54,0.15);}
+
+  .fav-label{font-size:11px;color:var(--text-muted);margin-bottom:7px;}
+  .fav-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+  .fav-chip{
+    display:flex;align-items:center;gap:4px;
+    background:var(--surface2);border:1px solid var(--border);
+    border-radius:20px;padding:5px 10px;font-size:12px;color:var(--text-muted);
+    cursor:pointer;transition:all 0.15s;user-select:none;
+  }
+  .fav-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .fav-chip.added{background:rgba(255,92,0,0.15);border-color:var(--accent);color:var(--accent);font-weight:600;}
+  .chip-x{color:var(--text-dim);font-size:13px;line-height:1;margin-left:1px;padding:0 2px;}
+  .chip-x:hover{color:var(--bad);}
+
+  .fav-add-row{display:flex;gap:6px;margin-top:6px;}
+  .fav-add-row input{flex:1;}
+  .fav-add-btn{background:var(--accent);border:none;border-radius:8px;color:white;font-size:13px;padding:0 13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;transition:background 0.2s;}
+  .fav-add-btn:hover{background:var(--accent2);}
+
+  .exercise-list{display:flex;flex-direction:column;gap:8px;}
+  .exercise-item{background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);animation:slideIn 0.2s ease;}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .exercise-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .exercise-name{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:4px 0;font-size:14px;font-weight:600;color:var(--text);outline:none;}
+  .exercise-name:focus{border-bottom-color:var(--accent);}
+  .remove-btn{background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;padding:0 4px;transition:color 0.2s;}
+  .remove-btn:hover{color:var(--bad);}
+
+  .sets-header{display:grid;grid-template-columns:26px 1fr 1fr 26px;gap:5px;margin-bottom:4px;}
+  .sets-header span{font-size:10px;color:var(--text-dim);text-align:center;}
+  .set-row{display:grid;grid-template-columns:26px 1fr 1fr 26px;gap:5px;align-items:center;margin-bottom:5px;}
+  .set-num{width:26px;height:26px;background:var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);font-weight:700;flex-shrink:0;}
+  .set-input{padding:6px !important;font-size:14px !important;text-align:center;}
+  .remove-set{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:0;transition:color 0.2s;text-align:center;}
+  .remove-set:hover{color:var(--bad);}
+  .add-set-btn{display:flex;align-items:center;justify-content:center;gap:4px;background:none;border:1px dashed var(--border);border-radius:6px;color:var(--text-dim);font-size:12px;font-family:'Noto Sans KR',sans-serif;padding:5px;cursor:pointer;margin-top:5px;transition:all 0.2s;width:100%;}
+  .add-set-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  .add-exercise-btn{width:100%;padding:11px;background:transparent;border:1px dashed var(--accent);border-radius:10px;color:var(--accent);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.2s;margin-top:4px;}
+  .add-exercise-btn:hover{background:rgba(255,92,0,0.08);}
+
+  .save-btn{width:100%;padding:14px;background:var(--accent);border:none;border-radius:10px;color:white;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.2s;margin-top:14px;letter-spacing:0.5px;}
+  .save-btn:hover{background:var(--accent2);transform:translateY(-1px);}
+
+  .log-empty{text-align:center;padding:48px 0;color:var(--text-dim);font-size:13px;line-height:2.5;}
+  .log-empty .icon{font-size:36px;margin-bottom:8px;}
+  .log-item{background:var(--surface);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.2s;}
+  .log-item:hover{border-color:var(--accent);}
+  .log-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .log-date{font-size:13px;font-weight:700;}
+  .log-exercises{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;}
+  .log-tag{background:var(--surface2);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--text-muted);border:1px solid var(--border);}
+  .log-memo{font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:7px;margin-top:4px;line-height:1.5;}
+  .log-delete{background:none;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;padding:2px 7px;border-radius:4px;transition:all 0.2s;}
+  .log-delete:hover{background:rgba(244,67,54,0.15);color:var(--bad);}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100;padding:20px;overflow-y:auto;}
+  .modal-overlay.show{display:flex;align-items:flex-start;justify-content:center;padding-top:36px;}
+  .modal{background:var(--surface);border-radius:16px;padding:20px;width:100%;max-width:480px;border:1px solid var(--border);animation:modalIn 0.25s ease;}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .modal-date{font-size:17px;font-weight:700;}
+  .modal-close{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text-muted);font-size:13px;cursor:pointer;padding:5px 11px;}
+  .modal-exercise{margin-bottom:14px;}
+  .modal-ex-name{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px;}
+  .modal-sets{display:flex;flex-wrap:wrap;gap:5px;}
+  .modal-set-badge{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--text-muted);}
+  .modal-set-badge span{color:var(--text);font-weight:500;}
+  .modal-memo-box{background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text-muted);line-height:1.6;margin-top:12px;border:1px solid var(--border);}
+
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .stat-card{background:var(--surface);border-radius:10px;padding:14px;border:1px solid var(--border);text-align:center;}
+  .stat-num{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent);line-height:1;margin-bottom:4px;}
+  .stat-label{font-size:11px;color:var(--text-muted);}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.3s;z-index:200;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .divider{height:1px;background:var(--border);margin:10px 0;}
+  .section-sub{font-size:11px;color:var(--text-dim);margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div>
+      <h1>🐷 운동일지</h1>
+      <p>83pig workout log</p>
+    </div>
+    <div class="header-right">
+      <span id="todayDate"></span>
+      <span id="todayDay" style="font-size:11px;font-weight:400;color:var(--text-muted);"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('write',this)">✏️ 기록</button>
+    <button class="tab" onclick="switchTab('logs',this)">📋 보기</button>
+    <button class="tab" onclick="switchTab('stats',this)">📊 통계</button>
+    <button class="tab" onclick="switchTab('fav',this)">⭐ 즐겨찾기</button>
+  </div>
+
+  <!-- 기록 -->
+  <div class="section active" id="write">
+    <div class="card">
+      <div class="card-title">📅 날짜 & 컨디션</div>
+      <div class="input-group">
+        <label>날짜</label>
+        <input type="date" id="workoutDate">
+      </div>
+      <div class="input-group" style="margin-bottom:0">
+        <label>오늘 컨디션</label>
+        <div class="condition-btns">
+          <button class="cond-btn" onclick="selectCond('good',this)" title="좋음">😤</button>
+          <button class="cond-btn" onclick="selectCond('mid',this)" title="보통">😐</button>
+          <button class="cond-btn" onclick="selectCond('bad',this)" title="피곤">😴</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⭐ 즐겨찾기에서 추가</div>
+      <div class="section-sub">탭하면 바로 운동 목록에 추가돼요</div>
+      <div class="fav-chips" id="favChipsWrite"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💪 오늘의 운동</div>
+      <div class="exercise-list" id="exerciseList"></div>
+      <button class="add-exercise-btn" onclick="addExercise('')">+ 직접 종목 추가</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📝 한줄 메모</div>
+      <textarea id="workoutMemo" placeholder="오늘 운동 느낀 점, 특이사항 등..."></textarea>
+    </div>
+
+    <button class="save-btn" onclick="saveWorkout()">💾 오늘 운동 저장</button>
+  </div>
+
+  <!-- 보기 -->
+  <div class="section" id="logs">
+    <div id="logList"></div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="section" id="stats">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">총 운동 횟수</div></div>
+      <div class="stat-card"><div class="stat-num" id="statMonth">0</div><div class="stat-label">이번 달 횟수</div></div>
+      <div class="stat-card"><div class="stat-num" id="statSets">0</div><div class="stat-label">총 세트 수</div></div>
+      <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">연속 운동일</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 자주 한 운동 TOP 5</div>
+      <div id="mostEx" style="font-size:13px;color:var(--text-muted);line-height:2.2;"></div>
+    </div>
+  </div>
+
+  <!-- 즐겨찾기 관리 -->
+  <div class="section" id="fav">
+    <div class="card">
+      <div class="card-title">⭐ 즐겨찾기 종목 관리</div>
+      <div class="section-sub">✕ 누르면 삭제, 아래서 새 종목 추가 가능</div>
+      <div class="fav-chips" id="favChipsManage"></div>
+      <div class="divider"></div>
+      <div class="fav-add-row">
+        <input type="text" id="favNewName" placeholder="새 종목 이름 입력" onkeydown="if(event.key==='Enter')addFav()">
+        <button class="fav-add-btn" onclick="addFav()">+ 추가</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-date" id="modalDate"></span>
+      <button class="modal-close" onclick="closeModal()">✕ 닫기</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_FAVS = [
+  '런닝머신','레그컬','레그익스텐션','레그프레스',
+  '벤치프레스','불가리안스쿼트','시티드로우',
+  '아웃타이','인클라인덤벨','이너타이',
+  '케이블푸시다운','펙덱플라이','풀업'
+];
+
+let favList = JSON.parse(localStorage.getItem('pig_favs') || 'null') || [...DEFAULT_FAVS];
+let workouts = JSON.parse(localStorage.getItem('pig_workouts') || '[]');
+let selectedCond = '';
+let exCount = 0, setCount = 0;
+
+// 날짜
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth()+1).padStart(2,'0');
+const dd = String(today.getDate()).padStart(2,'0');
+const days = ['일','월','화','수','목','금','토'];
+document.getElementById('workoutDate').value = `${yyyy}-${mm}-${dd}`;
+document.getElementById('todayDate').textContent = `${yyyy}.${mm}.${dd}`;
+document.getElementById('todayDay').textContent = `(${days[today.getDay()]}요일)`;
+
+// 탭
+function switchTab(tab, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  el.classList.add('active');
+  if(tab==='logs') renderLogs();
+  if(tab==='stats') renderStats();
+  if(tab==='fav') renderFavManage();
+  if(tab==='write') renderFavChipsWrite();
+}
+
+// 컨디션
+function selectCond(val, btn) {
+  selectedCond = val;
+  document.querySelectorAll('.cond-btn').forEach(b=>b.className='cond-btn');
+  btn.classList.add(`selected-${val}`);
+}
+
+// 즐겨찾기 저장 (가나다순)
+function saveFavs() {
+  favList.sort((a,b)=>a.localeCompare(b,'ko'));
+  localStorage.setItem('pig_favs', JSON.stringify(favList));
+}
+
+// 즐겨찾기 칩 (기록탭)
+function renderFavChipsWrite() {
+  const el = document.getElementById('favChipsWrite');
+  if(!el) return;
+  el.innerHTML = favList.map(name=>`
+    <div class="fav-chip" onclick="quickAdd('${name}',this)">${name}</div>
+  `).join('');
+}
+
+function quickAdd(name, chip) {
+  addExercise(name);
+  chip.classList.add('added');
+  const orig = chip.textContent;
+  chip.textContent = orig + ' ✓';
+  setTimeout(()=>{ chip.classList.remove('added'); chip.textContent = name; }, 1200);
+}
+
+// 즐겨찾기 관리탭
+function renderFavManage() {
+  document.getElementById('favChipsManage').innerHTML = favList.map((name,i)=>`
+    <div class="fav-chip" style="cursor:default">
+      ${name}<span class="chip-x" onclick="removeFav(${i})">✕</span>
+    </div>
+  `).join('');
+}
+
+function addFav() {
+  const input = document.getElementById('favNewName');
+  const name = input.value.trim();
+  if(!name){ showToast('종목 이름을 입력해주세요'); return; }
+  if(favList.includes(name)){ showToast('이미 있는 종목이에요'); return; }
+  favList.push(name);
+  saveFavs();
+  renderFavManage();
+  renderFavChipsWrite();
+  input.value = '';
+  showToast(`✅ "${name}" 추가됐어요`);
+}
+
+function removeFav(i) {
+  const name = favList[i];
+  favList.splice(i,1);
+  saveFavs();
+  renderFavManage();
+  renderFavChipsWrite();
+  showToast(`"${name}" 삭제됐어요`);
+}
+
+// 운동 종목
+function addExercise(name='') {
+  exCount++;
+  const id = exCount;
+  const div = document.createElement('div');
+  div.className = 'exercise-item';
+  div.id = `ex-${id}`;
+  div.innerHTML = `
+    <div class="exercise-header">
+      <input class="exercise-name" type="text" placeholder="운동 이름" value="${name}">
+      <button class="remove-btn" onclick="removeExercise(${id})">✕</button>
+    </div>
+    <div class="sets-header">
+      <span>세트</span><span>무게(kg)</span><span>횟수(회)</span><span></span>
+    </div>
+    <div class="set-list" id="sets-${id}"></div>
+    <button class="add-set-btn" onclick="addSet(${id})">+ 세트 추가</button>
+  `;
+  document.getElementById('exerciseList').appendChild(div);
+  addSet(id);
+  div.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function removeExercise(id) {
+  const el = document.getElementById(`ex-${id}`);
+  if(el) el.remove();
+}
+
+function addSet(exId) {
+  setCount++;
+  const sid = setCount;
+  const setList = document.getElementById(`sets-${exId}`);
+  const num = setList.children.length + 1;
+  const row = document.createElement('div');
+  row.className = 'set-row';
+  row.id = `set-${sid}`;
+  row.innerHTML = `
+    <div class="set-num">${num}</div>
+    <input class="set-input" type="text" placeholder="0" inputmode="decimal">
+    <input class="set-input" type="text" placeholder="0" inputmode="numeric">
+    <button class="remove-set" onclick="removeSet(${exId},${sid})">✕</button>
+  `;
+  setList.appendChild(row);
+}
+
+function removeSet(exId, sid) {
+  document.getElementById(`set-${sid}`)?.remove();
+  document.querySelectorAll(`#sets-${exId} .set-row`).forEach((r,i)=>{
+    r.querySelector('.set-num').textContent = i+1;
+  });
+}
+
+// 저장
+function saveWorkout() {
+  const date = document.getElementById('workoutDate').value;
+  const memo = document.getElementById('workoutMemo').value.trim();
+  const exercises = [];
+
+  document.querySelectorAll('.exercise-item').forEach(ex=>{
+    const name = ex.querySelector('.exercise-name').value.trim();
+    if(!name) return;
+    const sets = [];
+    ex.querySelectorAll('.set-row').forEach(row=>{
+      const ins = row.querySelectorAll('input');
+      const w = ins[0].value.trim(), r = ins[1].value.trim();
+      if(w||r) sets.push({weight:w||'—',reps:r||'—'});
+    });
+    if(sets.length>0) exercises.push({name,sets});
+  });
+
+  if(!date){ showToast('날짜를 선택해주세요!'); return; }
+  if(exercises.length===0){ showToast('운동 종목을 1개 이상 입력해주세요!'); return; }
+
+  workouts.unshift({id:Date.now(),date,condition:selectedCond||'mid',exercises,memo});
+  localStorage.setItem('pig_workouts',JSON.stringify(workouts));
+
+  document.getElementById('exerciseList').innerHTML='';
+  document.getElementById('workoutMemo').value='';
+  selectedCond='';
+  document.querySelectorAll('.cond-btn').forEach(b=>b.className='cond-btn');
+  exCount=0; setCount=0;
+  renderFavChipsWrite();
+  showToast('✅ 운동 기록 저장 완료!');
+}
+
+// 기록 목록
+const condIcon = {good:'😤',mid:'😐',bad:'😴'};
+
+function renderLogs() {
+  const el = document.getElementById('logList');
+  if(workouts.length===0){
+    el.innerHTML=`<div class="log-empty"><div class="icon">🏋️</div>아직 기록이 없어요<br>첫 번째 운동을 기록해보세요!</div>`;
+    return;
+  }
+  el.innerHTML = workouts.map(w=>`
+    <div class="log-item" onclick="showDetail(${w.id})">
+      <div class="log-item-header">
+        <span class="log-date">${w.date.replace(/-/g,'.')}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span>${condIcon[w.condition]||'😐'}</span>
+          <button class="log-delete" onclick="deleteLog(event,${w.id})">삭제</button>
+        </div>
+      </div>
+      <div class="log-exercises">
+        ${w.exercises.map(e=>`<span class="log-tag">${e.name}</span>`).join('')}
+      </div>
+      ${w.memo?`<div class="log-memo">"${w.memo}"</div>`:''}
+    </div>
+  `).join('');
+}
+
+function deleteLog(e,id) {
+  e.stopPropagation();
+  workouts = workouts.filter(w=>w.id!==id);
+  localStorage.setItem('pig_workouts',JSON.stringify(workouts));
+  renderLogs();
+  showToast('삭제됐어요');
+}
+
+// 상세
+function showDetail(id) {
+  const w = workouts.find(x=>x.id===id);
+  if(!w) return;
+  document.getElementById('modalDate').textContent=`${w.date.replace(/-/g,'.')} ${condIcon[w.condition]||''}`;
+  let html = w.exercises.map(ex=>`
+    <div class="modal-exercise">
+      <div class="modal-ex-name">${ex.name}</div>
+      <div class="modal-sets">
+        ${ex.sets.map((s,i)=>`<div class="modal-set-badge">${i+1}세트 <span>${s.weight}kg × ${s.reps}회</span></div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+  if(w.memo) html+=`<div class="modal-memo-box">💬 ${w.memo}</div>`;
+  document.getElementById('modalContent').innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModalBg(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+
+// 통계
+function renderStats() {
+  const total=workouts.length;
+  const thisMonth=workouts.filter(w=>w.date.startsWith(`${yyyy}-${mm}`)).length;
+  let totalSets=0;
+  const exFreq={};
+  workouts.forEach(w=>{
+    w.exercises.forEach(ex=>{
+      totalSets+=ex.sets.length;
+      exFreq[ex.name]=(exFreq[ex.name]||0)+1;
+    });
+  });
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statMonth').textContent=thisMonth;
+  document.getElementById('statSets').textContent=totalSets;
+
+  const dates=[...new Set(workouts.map(w=>w.date))].sort().reverse();
+  let streak=0, cur=new Date(today);
+  for(let d of dates){
+    const ds=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+    if(d===ds){streak++;cur.setDate(cur.getDate()-1);}else break;
+  }
+  document.getElementById('statStreak').textContent=streak;
+
+  const sorted=Object.entries(exFreq).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('mostEx').innerHTML=sorted.length
+    ? sorted.map(([n,c],i)=>`<span style="color:var(--accent);font-weight:700">${i+1}.</span> <span style="color:var(--text)">${n}</span> — ${c}회<br>`).join('')
+    : '<span style="color:var(--text-dim)">아직 기록이 없어요</span>';
+}
+
+// 토스트
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+renderFavChipsWrite();
+</script>
+</body>
+</html>
